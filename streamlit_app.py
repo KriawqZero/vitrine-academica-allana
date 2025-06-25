@@ -66,26 +66,8 @@ with tab2:
     if not st.session_state.tccs:
         st.info("Nenhum TCC cadastrado ainda.")
     else:
-        # Filtro simples
-        col1, col2 = st.columns(2)
-        with col1:
-            cursos = ["Todos"] + sorted(list(set([tcc["curso"] for tcc in st.session_state.tccs])))
-            curso_filter = st.selectbox("Filtrar por curso:", cursos)
-        with col2:
-            search = st.text_input("Buscar por título ou autor:")
-        
-        # Aplicar filtros
-        tccs_filtrados = st.session_state.tccs.copy()
-        
-        if curso_filter != "Todos":
-            tccs_filtrados = [tcc for tcc in tccs_filtrados if tcc["curso"] == curso_filter]
-        
-        if search:
-            tccs_filtrados = [tcc for tcc in tccs_filtrados 
-                            if search.lower() in tcc["titulo"].lower() or search.lower() in tcc["autor"].lower()]
-        
         # Mostrar TCCs
-        for tcc in tccs_filtrados:
+        for tcc in st.session_state.tccs:
             with st.container():
                 if st.session_state.editing_id == tcc["id"]:
                     # Modo edição
