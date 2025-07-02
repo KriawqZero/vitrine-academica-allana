@@ -63,7 +63,8 @@ def show_enviar_tcc():
                     "palavras_chave": palavras_chave,
                     "instituicao": instituicao,
                     "data_cadastro": datetime.datetime.now().strftime("%d/%m/%Y"),
-                    "usuario_cadastro": st.session_state.get("usuario", "Desconhecido")
+                    "usuario_cadastro": st.session_state.get("usuario", "Desconhecido"),
+                    "usuario_id": st.session_state.get("usuario_logado", {}).get("usuario", "Desconhecido")
                 }
                 st.session_state.tccs.append(new_tcc)
                 st.success("TCC cadastrado com sucesso!")

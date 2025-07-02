@@ -33,22 +33,28 @@ def show_exibir_tccs():
     # Filtros
     if st.session_state.tccs:
         st.markdown("### Filtros:")
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
         
         with col1:
+            filtro_propriedade = st.selectbox(
+                "Filtrar por proprietário:",
+                ["Todos os TCCs", "Apenas meus TCCs", "TCCs de outros"]
+            )
+        
+        with col2:
             filtro_curso = st.selectbox(
                 "Filtrar por curso:",
                 ["Todos"] + sorted(list(set([tcc.get('curso', '') for tcc in st.session_state.tccs])))
             )
         
-        with col2:
+        with col3:
             anos_disponiveis = sorted(list(set([tcc.get('ano', 0) for tcc in st.session_state.tccs])), reverse=True)
             filtro_ano = st.selectbox(
                 "Filtrar por ano:",
                 ["Todos"] + anos_disponiveis
             )
         
-        with col3:
+        with col4:
             busca_texto = st.text_input("Buscar no título:", placeholder="Digite para buscar...")
         
         st.markdown("---")
@@ -61,6 +67,13 @@ def show_exibir_tccs():
     else:
         # Aplicar filtros
         tccs_filtrados = st.session_state.tccs.copy()
+        usuario_id = st.session_state.get("usuario_logado", {}).get("usuario", "")
+        
+        # Filtro por proprietário
+        if filtro_propriedade == "Apenas meus TCCs":
+            tccs_filtrados = [tcc for tcc in tccs_filtrados if tcc.get('usuario_id') == usuario_id]
+        elif filtro_propriedade == "TCCs de outros":
+            tccs_filtrados = [tcc for tcc in tccs_filtrados if tcc.get('usuario_id') != usuario_id]
         
         if filtro_curso != "Todos":
             tccs_filtrados = [tcc for tcc in tccs_filtrados if tcc.get('curso', '') == filtro_curso]
@@ -78,15 +91,35 @@ def show_exibir_tccs():
         for tcc in tccs_filtrados:
             with st.container():
                 if st.session_state.editing_id == tcc["id"]:
-                    # Modo edição
-                    mostrar_edicao_tcc(tcc)
+                    # Verificar se o usuário pode editar este TCC
+                    usuario_id = st.session_state.get("usuario_logado", {}).get("usuario", "")
+                    if tcc.get('usuario_id') == usuario_id:
+                        # Modo edição
+                        mostrar_edicao_tcc(tcc)
+                    else:
+                        st.error("Você só pode editar seus próprios TCCs!")
+                        st.session_state.editing_id = None
+                        mostrar_tcc(tcc)
                 else:
                     # Modo visualização
                     mostrar_tcc(tcc)
 
 def mostrar_tcc(tcc):
     """Exibe um TCC em modo de visualização"""
-    with st.expander(f"{tcc['titulo']} - {tcc['autor']} ({tcc['ano']})", expanded=False):
+    # Verificar se é TCC do usuário logado
+    usuario_id = st.session_state.get("usuario_logado", {}).get("usuario", "")
+    eh_meu_tcc = tcc.get('usuario_id') == usuario_id
+    
+    # Usar identificação diferente para TCCs do usuário logado
+    if eh_meu_tcc:
+        titulo_expandir = f"{tcc['titulo']} - {tcc['autor']} ({tcc['ano']}) - SEU TCC"
+    else:
+        titulo_expandir = f"{tcc['titulo']} - {tcc['autor']} ({tcc['ano']})"
+    
+    with st.expander(titulo_expandir, expanded=False):
+        if eh_meu_tcc:
+            st.info("Este é um TCC cadastrado por você.")
+        
         col1, col2 = st.columns([2, 1])
         
         with col1:
@@ -104,17 +137,20 @@ def mostrar_tcc(tcc):
         st.markdown("**Resumo:**")
         st.write(tcc['resumo'])
         
-        # Botões de ação
-        col1, col2, col3 = st.columns([1, 1, 3])
-        with col1:
-            if st.button("Editar", key=f"edit_btn_{tcc['id']}"):
-                st.session_state.editing_id = tcc["id"]
-                st.rerun()
-        with col2:
-            if st.button("Excluir", key=f"del_btn_{tcc['id']}"):
-                st.session_state.tccs = [t for t in st.session_state.tccs if t["id"] != tcc["id"]]
-                st.success("TCC excluído!")
-                st.rerun()
+        # Botões de ação - só mostrar editar/excluir para o próprio usuário
+        if eh_meu_tcc:
+            col1, col2, col3 = st.columns([1, 1, 3])
+            with col1:
+                if st.button("Editar", key=f"edit_btn_{tcc['id']}"):
+                    st.session_state.editing_id = tcc["id"]
+                    st.rerun()
+            with col2:
+                if st.button("Excluir", key=f"del_btn_{tcc['id']}"):
+                    st.session_state.tccs = [t for t in st.session_state.tccs if t["id"] != tcc["id"]]
+                    st.success("TCC excluído!")
+                    st.rerun()
+        else:
+            st.caption("Você só pode editar/excluir seus próprios TCCs.")
 
 def mostrar_edicao_tcc(tcc):
     """Exibe um TCC em modo de edição"""

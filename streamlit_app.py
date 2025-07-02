@@ -23,8 +23,16 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "usuario" not in st.session_state:
     st.session_state.usuario = None
+if "usuario_logado" not in st.session_state:
+    st.session_state.usuario_logado = None
+if "usuarios" not in st.session_state:
+    st.session_state.usuarios = []
 if "current_page" not in st.session_state:
-    st.session_state.current_page = "login"
+    # Se não há usuários cadastrados, direcionar para cadastro
+    if not st.session_state.usuarios:
+        st.session_state.current_page = "cadastro"
+    else:
+        st.session_state.current_page = "login"
 
 def show_sidebar():
     """Exibe a barra lateral com navegação"""
@@ -65,6 +73,7 @@ def show_sidebar():
             if st.button("Logout", use_container_width=True):
                 st.session_state.logged_in = False
                 st.session_state.usuario = None
+                st.session_state.usuario_logado = None
                 st.session_state.current_page = "login"
                 st.success("Logout realizado com sucesso!")
                 st.rerun()
@@ -163,8 +172,10 @@ def show_dashboard():
                 st.metric("Total de TCCs", total_tccs)
             
             with col2:
+                # Contar TCCs do usuário logado usando o ID do usuário
+                usuario_id = st.session_state.get("usuario_logado", {}).get("usuario", "")
                 meus_tccs = len([tcc for tcc in st.session_state.tccs 
-                               if tcc.get('usuario_cadastro') == st.session_state.usuario])
+                               if tcc.get('usuario_id') == usuario_id])
                 st.metric("Meus TCCs", meus_tccs)
             
             with col3:

@@ -59,6 +59,16 @@ def show_cadastro():
             if "@" not in email:
                 erros.append("Digite um e-mail válido")
             
+            # Verificar se usuário já existe
+            if "usuarios" in st.session_state:
+                for user in st.session_state.usuarios:
+                    if user.get("usuario") == usuario:
+                        erros.append("Nome de usuário já existe! Escolha outro.")
+                        break
+                    if user.get("email") == email:
+                        erros.append("E-mail já cadastrado! Use outro e-mail.")
+                        break
+            
             if erros:
                 for erro in erros:
                     st.error(erro)
@@ -68,6 +78,7 @@ def show_cadastro():
                     "nome_completo": nome_completo,
                     "email": email,
                     "usuario": usuario,
+                    "senha": senha,  # Armazenar senha para login
                     "instituicao": instituicao,
                     "curso": curso,
                     "telefone": telefone,

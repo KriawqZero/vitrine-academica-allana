@@ -29,19 +29,47 @@ def show_login():
             submitted = st.form_submit_button("Entrar", type="primary", use_container_width=True)
         
         with col2:
-            st.info("""
-            **Credenciais para teste:**
-            
-            **Usuário:** Allana  
-            **Senha:** allana123
-            """)
+            # Verificar se existem usuários cadastrados
+            if "usuarios" in st.session_state and st.session_state.usuarios:
+                st.info(f"""
+                **Usuários cadastrados:** {len(st.session_state.usuarios)}
+                
+                Use o nome de usuário e senha que você cadastrou no sistema.
+                """)
+            else:
+                st.warning("""
+                **Nenhum usuário cadastrado ainda.**
+                
+                Faça seu cadastro primeiro para poder fazer login.
+                """)
+                
+                if st.button("Ir para Cadastro", key="btn_cadastro_from_login"):
+                    st.switch_page("pages/cadastro.py")
     
     if submitted:
-        # Validação mockada
-        if usuario == "Allana" and senha == "allana123":
+        # Validação baseada em usuários cadastrados
+        if not usuario or not senha:
+            st.error("Preencha todos os campos!")
+            return False
+        
+        # Verificar se existem usuários cadastrados
+        if "usuarios" not in st.session_state or not st.session_state.usuarios:
+            st.error("Nenhum usuário cadastrado no sistema!")
+            st.info("Cadastre-se primeiro antes de fazer login.")
+            return False
+        
+        # Buscar usuário nos cadastrados
+        usuario_encontrado = None
+        for user in st.session_state.usuarios:
+            if user.get("usuario") == usuario and user.get("senha") == senha:
+                usuario_encontrado = user
+                break
+        
+        if usuario_encontrado:
             st.session_state.logged_in = True
-            st.session_state.usuario = usuario
-            st.success("Login realizado com sucesso!")
+            st.session_state.usuario = usuario_encontrado.get("nome_completo", usuario)
+            st.session_state.usuario_logado = usuario_encontrado
+            st.success(f"Login realizado com sucesso! Bem-vindo(a), {usuario_encontrado.get('nome_completo', usuario)}!")
             st.rerun()
         else:
             st.error("Usuário ou senha incorretos!")
