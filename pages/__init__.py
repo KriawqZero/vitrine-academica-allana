@@ -1,0 +1,1 @@
+# Pasta pages - Contém as diferentes telas da aplicação Vitrine Acadêmica 
