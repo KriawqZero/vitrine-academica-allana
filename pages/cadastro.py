@@ -18,21 +18,12 @@ def show_cadastro():
         with col2:
             instituicao = st.text_input("Instituição *", placeholder="Nome da sua instituição")
             curso = st.text_input("Curso", placeholder="Seu curso (opcional)")
-            telefone = st.text_input("Telefone", placeholder="(11) 99999-9999")
         
         col3, col4 = st.columns(2)
         with col3:
             senha = st.text_input("Senha *", type="password", placeholder="Digite uma senha segura")
         with col4:
             confirmar_senha = st.text_input("Confirmar Senha *", type="password", placeholder="Confirme sua senha")
-        
-        # Tipo de usuário
-        tipo_usuario = st.selectbox("Tipo de Usuário *", 
-                                  ["Estudante", "Professor", "Coordenador", "Administrador"])
-        
-        # Área de interesse
-        area_interesse = st.text_area("Área de Interesse", 
-                                    placeholder="Descreva suas áreas de interesse acadêmico...")
         
         # Termos de uso
         aceitar_termos = st.checkbox("Aceito os termos de uso e política de privacidade *")
@@ -73,21 +64,18 @@ def show_cadastro():
                 for erro in erros:
                     st.error(erro)
             else:
-                # Simulação de cadastro bem-sucedido
+                # Cadastro bem-sucedido
                 novo_usuario = {
                     "nome_completo": nome_completo,
                     "email": email,
                     "usuario": usuario,
-                    "senha": senha,  # Armazenar senha para login
+                    "senha": senha,
                     "instituicao": instituicao,
                     "curso": curso,
-                    "telefone": telefone,
-                    "tipo_usuario": tipo_usuario,
-                    "area_interesse": area_interesse,
                     "data_cadastro": datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
                 }
                 
-                # Salvar no session_state (em um sistema real, salvaria no banco de dados)
+                # Salvar no session_state
                 if "usuarios" not in st.session_state:
                     st.session_state.usuarios = []
                 st.session_state.usuarios.append(novo_usuario)
@@ -100,31 +88,30 @@ def show_cadastro():
                 
                 **Próximos passos:**
                 1. Faça login na página de Login
-                2. Complete seu perfil
-                3. Comece a cadastrar seus TCCs
+                2. Comece a cadastrar seus TCCs
                 
                 **Dados da conta criada:**
                 - **Nome:** {nome}
                 - **Usuário:** {usuario}
                 - **E-mail:** {email}
                 - **Instituição:** {instituicao}
-                - **Tipo:** {tipo}
                 """.format(
                     nome=nome_completo,
                     usuario=usuario,
                     email=email,
-                    instituicao=instituicao,
-                    tipo=tipo_usuario
+                    instituicao=instituicao
                 ))
                 
                 if st.button("Ir para Login"):
-                    st.switch_page("pages/login.py")
+                    st.session_state.current_page = "login"
+                    st.rerun()
     
     # Link para login
     st.markdown("---")
     st.markdown("**Já tem uma conta?**")
     if st.button("Fazer Login"):
-        st.switch_page("pages/login.py")
+        st.session_state.current_page = "login"
+        st.rerun()
 
 if __name__ == "__main__":
     show_cadastro() 

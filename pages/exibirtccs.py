@@ -63,7 +63,8 @@ def show_exibir_tccs():
     if not st.session_state.tccs:
         st.info("Nenhum TCC cadastrado ainda.")
         if st.button("Cadastrar primeiro TCC"):
-            st.switch_page("pages/enviartcc.py")
+            st.session_state.current_page = "enviartcc"
+            st.rerun()
     else:
         # Aplicar filtros
         tccs_filtrados = st.session_state.tccs.copy()
